@@ -21,18 +21,18 @@ AsyncWebServer server(80);
 // // Define a stepper and the pins it will use
 AccelStepper stepper(AccelStepper::DRIVER, 4, 5);
 long oneRotation = 200 * 5.18 * 16;
-long openPosition = oneRotation * 5;
-long zeroPosition = 0;
+long closedPosition = oneRotation * -5;
 bool zeroClosed = true;
+long zeroPosition = zeroClosed ? closedPosition : 0;
 
 long getOpenPos()
 {
-  return zeroClosed ? zeroPosition + openPosition : zeroPosition;
+  return zeroClosed ? zeroPosition : zeroPosition + closedPosition;
 }
 
 long getClosedPos()
 {
-  return zeroClosed ? zeroPosition : zeroPosition - openPosition;
+  return zeroClosed ? zeroPosition - closedPosition : zeroPosition;
 }
 
 const char index_html[] PROGMEM = R"rawliteral(
@@ -140,8 +140,8 @@ void setup()
 
   stepper.setEnablePin(14);
   stepper.setPinsInverted(false, false, false, false, true);
-  stepper.setMaxSpeed(oneRotation);
-  stepper.setAcceleration(oneRotation);
+  stepper.setMaxSpeed(oneRotation / 2);
+  stepper.setAcceleration(oneRotation / 2);
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
